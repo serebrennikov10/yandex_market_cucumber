@@ -1,5 +1,4 @@
-package ru.yandex.two_test_package;
-
+package ru.yandex.note_package;
 
 public class Note {
     private String timeWork;

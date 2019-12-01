@@ -2,6 +2,7 @@
 target
 allure-results/
 .allure
+src/main/resources/screenshots/
 
 *.iws
 *.iml

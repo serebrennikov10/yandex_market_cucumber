@@ -14,7 +14,8 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import ru.yandex.two_test_package.Note;
+import ru.yandex.note_package.Note;
+import ru.yandex.note_package.NotePrice;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
@@ -31,7 +33,13 @@ public class MarketPage  {
     private WebDriver driver;
     private WebDriverWait waitDriver;
     private Actions MoveToElement;
-
+    private static NotePrice minPrice = new NotePrice();
+    private static NotePrice maxPrice = new NotePrice();
+    private static boolean result;
+    private Logger LOGGER;
+    {
+        LOGGER = Logger.getLogger(MarketPage.class.getName());
+    }
 
     public MarketPage(WebDriver driver) {
         PageFactory.initElements(driver, this);
@@ -70,7 +78,6 @@ public class MarketPage  {
     private WebElement popupWindow;
     @FindBy(id = "header-search")
     private WebElement searchInputHeader;
-    //@FindBy(className = "n-snippet-card2__title")
     @FindBy(xpath = ".//div[@class='n-snippet-card2__title']")
     private List<WebElement> elementsName;
     @FindBy(className = "n-snippet-card2__main-price")
@@ -102,20 +109,6 @@ public class MarketPage  {
     private String asc = "n-filter-sorter i-bem n-filter-sorter_js_inited n-filter-sorter_sort_asc n-filter-sorter_state_select";
     private String desc = "n-filter-sorter i-bem n-filter-sorter_js_inited n-filter-sorter_sort_desc n-filter-sorter_state_select";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     @Step("Открываю страницу")
     public MarketPage openPage(String url) throws IOException {
         driver.get(url);
@@ -125,13 +118,11 @@ public class MarketPage  {
         return new MarketPage(driver);
     }
 
-
     @Step("Проверяю title")
     public MarketPage getTitle(String title) {
         Assert.assertEquals("Яндекс.Маркет — выбор и покупка товаров из проверенных интернет-магазинов", title);
         return new MarketPage(driver);
     }
-
 
     public static class RegionOnPage {
         private static volatile RegionOnPage instance;
@@ -152,13 +143,9 @@ public class MarketPage  {
     @Step("Меняю регион")
     public void selectNewRegionOnPage() throws IOException {
         RegionOnPage region1 = RegionOnPage.getInstance();
-        //System.out.println(region1.getClass());
-
         String nowRegion = changeRegion.getText();
         String newRegion = "Воронеж";
-        if (nowRegion.equals(newRegion)) {
-        }
-        else {
+        if (!nowRegion.equals(newRegion)) {
             changeRegion.click();
             waitDriver.until(ExpectedConditions.visibilityOfElementLocated(frameInputRegion));
             inputRegion.sendKeys(newRegion);
@@ -184,7 +171,6 @@ public class MarketPage  {
         saveScreenshotPNG (driver, "Установлен регион "+newRegion);
     }
 
-
     @Step("Открываю категорий")
     public MarketPage openAllCategories() throws IOException {
         waitDriver.until(ExpectedConditions.visibilityOfElementLocated(controlHamburger));
@@ -208,8 +194,7 @@ public class MarketPage  {
     public MarketPage openNotebookCategory() throws IOException {
         MoveToElement.moveToElement(notebookCategory).perform();
         notebookCategory.click();
-        //waitDriver.until(ExpectedConditions.visibilityOfElementLocated(noteHeadlineHeader));
-        //saveScreenshotPNG (driver, "Ноутбуки");
+        saveScreenshotPNG (driver, "Ноутбуки");
         return new MarketPage(driver);
     }
 
@@ -223,10 +208,6 @@ public class MarketPage  {
         waitDriver.until(ExpectedConditions.visibilityOfElementLocated(noteSnippetList));
         return new MarketPage(driver);
     }
-
-
-
-
 
     public MarketPage setListStyleVisibility(){
         MoveToElement.moveToElement(setListStyle).perform();
@@ -251,9 +232,8 @@ public class MarketPage  {
     @Step("Сортирую по цене")
     public MarketPage sortByPrice() throws IOException {
         sortPrice.click();
-        //waitDriver.until(ExpectedConditions.visibilityOfElementLocated(noteSnippetList));
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -340,30 +320,29 @@ public class MarketPage  {
         return new MarketPage(driver);
     }
 
-
     @Step("Считаю разницу между дорогим и дешевым ноутбуком")
-    public MarketPage findNotePriceMinAndMax() throws IOException {
-        NotePrice minPrice = new NotePrice();
-        findNoteMinPrice(minPrice);
-        NotePrice maxPrice = new NotePrice();
-        findNoteMaxPrice(maxPrice);
+    public MarketPage differenceNotePriceMinAndMax() {
         differencePrice(minPrice.price, maxPrice.price);
         return new MarketPage(driver);
     }
+
     @Step("Ищу дешевый ноутбук")
-    private void findNoteMinPrice(NotePrice minPrice) throws IOException {
+    public MarketPage findNoteMinPrice() throws IOException {
         sortPriceByAsc();
         System.out.println("Дешевый Ноутбук:");
-        getFirstNameAndPriceNote(minPrice);
-    }
-    @Step("Ищу дорогой ноутбук")
-    private void findNoteMaxPrice(NotePrice maxPrice) throws IOException {
-        sortPriceByDesc();
-        System.out.println("Дорогой Ноутбук:");
-        getFirstNameAndPriceNote(maxPrice);
+        setFirstNameAndPriceForNote(minPrice);
+        return new MarketPage(driver);
     }
 
-    private void getFirstNameAndPriceNote(NotePrice note){
+    @Step("Ищу дорогой ноутбук")
+    public MarketPage findNoteMaxPrice() throws IOException {
+        sortPriceByDesc();
+        System.out.println("Дорогой Ноутбук:");
+        setFirstNameAndPriceForNote(maxPrice);
+        return new MarketPage(driver);
+    }
+
+    private void setFirstNameAndPriceForNote(NotePrice note){
         for (WebElement element : elementsInfoNote) {
             note.setName(element.findElement(noteNameTitle).getText());
             note.setPrice(Integer.parseInt((element.findElement(noteMainPrice).getText()).replaceAll("\\D+", "")));
@@ -372,15 +351,14 @@ public class MarketPage  {
         }
     }
 
-    private static Integer differencePrice;
     @Step("Считаю разницу")
-    private void differencePrice(int min, int max) {
-        differencePrice = max - min;
-        stepAllure("Разница в цене: "+differencePrice+" р.");
-        System.out.println("Разница в цене составляет "+differencePrice+" р.");
+    private MarketPage differencePrice(int min, int max) {
+        Integer differencePrice = max - min;
+        Assert.assertNotNull("ERROR: Difference price is NULL!" ,differencePrice);
+        stepAllure("Разница в цене: "+ differencePrice +" р.");
+        System.out.println("Разница в цене составляет "+ differencePrice +" р.");
+        return new MarketPage(driver);
     }
-
-
 
     class WebElementComparator implements Comparator<WebElement> {
         @Override
@@ -415,7 +393,7 @@ public class MarketPage  {
         Map<String , String> map = new HashMap<>();
         for(int i=0;i<elementsName.size();i++)
             map.put(elementsName.get(i).getText(), elementsPrice.get(i).getText());
-        System.out.println("Вывожу данные из map: ");
+        System.out.println("Вывожу данные из map: <name, price>");
         Map<String, String> reversedMap = new TreeMap<>(map);
         for (Map.Entry entry : reversedMap.entrySet()) {
             System.out.println(entry.getKey() + " - " + entry.getValue());
@@ -440,81 +418,22 @@ public class MarketPage  {
         return new MarketPage(driver);
     }
 
-
-/*    @Step("Открываю выбранный ноут")
-    public MarketPage openNote(int number) throws IOException {
-        int n = number - 1;
-        WebElement note = elementsName.get(n);
-        String noteName = note.getText();
-        MoveToElement.moveToElement(note).perform();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        note.click();
-        //waitDriver.until(ExpectedConditions.visibilityOfElementLocated(notePage));
-        saveScreenshotPNG (driver, noteName);
-        return new MarketPage(driver);
-    }*/
-
-
-
     @Step("Открываю выбранный ноут")
     public MarketPage openNote(int number) throws IOException {
         int n = number - 1;
         WebElement note = elementsName.get(n);
         String noteName = note.getText();
         MoveToElement.moveToElement(note).perform();
+        note.click();
         try {
-            Thread.sleep(2000);
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        note.click();
-        System.out.println("Сделал клик");
-/*        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-        ////////////////////////
-        //String originalWindow = driver.getWindowHandle();
-        //final Set<String> oldWindowsSet = driver.getWindowHandles();
-
-
-
-/*        ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
-        System.out.println("перехожу на новую вкладку.....");
-        driver.switchTo().window(tabs.get(1));
-        System.out.println("Переключился");
-        System.out.println("Перехожу в характеристики...");*/
-
-
-
-        //openSpec();
-
-
-/*        System.out.println("Перешел в характеристики");
-        System.out.println("Закрытие драйвера...");
-        driver.close();
-        System.out.println("Закрыл");
-        System.out.println("Переключаюсь на первую вкладку...");
-        driver.switchTo().window(tabs.get(0));
-        System.out.println("Переключился на первую!");
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-
-        ///////////////////////
-
-        //waitDriver.until(ExpectedConditions.visibilityOfElementLocated(notePage));
+        LOGGER.info("Click on note: "+noteName);
         saveScreenshotPNG (driver, noteName);
         return new MarketPage(driver);
     }
-
 
     @Step("Открываю характеристики ноутбука")
     public MarketPage openSpec() throws IOException {
@@ -524,33 +443,23 @@ public class MarketPage  {
         return new MarketPage(driver);
     }
 
-
-
-
-
-
-    //private ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
-
     @Step("Переключаюсь на новую вкладку")
     public MarketPage switchToNewTabs() throws IOException {
         ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
-        System.out.println("перехожу на новую вкладку.....");
+        LOGGER.info("Switch to new tabs...");
         driver.switchTo().window(tabs.get(1));
-        System.out.println("Переключился");
-        //waitDriver.until(ExpectedConditions.visibilityOfElementLocated(notePage));
+        LOGGER.info("Switch is done.");
         return new MarketPage(driver);
     }
 
     @Step("Переключаюсь на старую вкладку")
     public MarketPage switchToOldTabs() throws IOException {
         ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
-        System.out.println("Хочу уйти на старую вкладку...");
-        System.out.println("Закрытие драйвера...");
+        LOGGER.info("Clode tabs...");
         driver.close();
-        System.out.println("Закрыл");
-        System.out.println("Переключаюсь на старую вкладку...");
+        LOGGER.info("Switch to old tabs...");
         driver.switchTo().window(tabs.get(0));
-        System.out.println("Переключился на старую!");
+        LOGGER.info("Switch is done.");
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
@@ -559,33 +468,22 @@ public class MarketPage  {
         return new MarketPage(driver);
     }
 
-
-
-
-
-
-
-/*    @Step("Открываю характеристики ноутбука")
-    public MarketPage openSpec() throws IOException {
-        MoveToElement.moveToElement(pageNoteSpec).perform();
-        pageNoteSpec.click();
-        saveScreenshotPNG (driver, "Характеристики");
-        return new MarketPage(driver);
-    }*/
-
-    @Step("Кликаю на первую подсказку")
-    public MarketPage outFirstPopup() throws IOException {
-        MoveToElement.moveToElement(firstPopup).perform();
+    @Step("Кликаю на первую подсказку popup")
+    public MarketPage clickFirstPopup() throws IOException {
         firstPopup.click();
         popupWindow.click();
         saveScreenshotPNG (driver, "открытие popup");
-        String allPopup = popupWindow.getText();
-        String popup = allPopup.replace("Словарь терминов по категории Ноутбуки", "");
-        System.out.println("Текст подсказки: "+popup);
-        stepAllure("Текст подсказки: "+popup);
         return new MarketPage(driver);
     }
 
+    @Step("Считываю и вывожу текст подскази в консоль")
+    public MarketPage outFirstPopup() throws IOException {
+        String allPopup = popupWindow.getText();
+        String popup = allPopup.replace("Словарь терминов по категории Ноутбуки", "");
+        System.out.println("Текст подсказки: \n"+popup);
+        stepAllure("Текст подсказки: \n"+popup);
+        return new MarketPage(driver);
+    }
 
     @Step("Поиск товаров из файла {FileName}")
     public MarketPage readAndSearchFromExcel(String FileName) throws IOException {
@@ -602,7 +500,7 @@ public class MarketPage  {
 
     @Step("Ищу: {noteName}")
     public MarketPage searchNote(String noteName) throws IOException {
-        System.out.println("Ищу: "+noteName);
+        LOGGER.info("Ищу: "+noteName);
         searchInputHeader.clear();
         searchInputHeader.sendKeys(noteName);
         searchInputHeader.sendKeys(Keys.ENTER);
@@ -621,8 +519,9 @@ public class MarketPage  {
     public MarketPage equalsNameFirstElement(String noteName)  {
         WebElement elementsNoteName = elementsName.get(0);
         String firstNoteName = elementsNoteName.getText();
+        LOGGER.info("Первый ноутбук из списка наденных: "+firstNoteName);
+        System.out.println("Найден: "+noteName);
         assertTrue("Error! Result is False!", firstNoteName.contains(noteName));
-
         return new MarketPage(driver);
     }
 
@@ -670,10 +569,6 @@ public class MarketPage  {
         return new MarketPage(driver);
     }
 
-
-
-    private boolean result;
-
     @Step("Сравниваю два ноутбука")
     public void equals(Note one, Note two){
         result = one.equals(two);
@@ -685,6 +580,16 @@ public class MarketPage  {
         stepAllure("Результат: "+result);
     }
 
+    @Step("Удаление старых сриншотов")
+    public MarketPage deleteScreenshots(String path){
+        try {
+            FileUtils.cleanDirectory(new File(path));
+            LOGGER.info("Screenshots removed.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new MarketPage(driver);
+    }
 
 
     @Attachment(value = "{nameScreen}", type = "image/png")
@@ -712,6 +617,4 @@ public class MarketPage  {
             e.getMessage();
         }
     }
-
-
 }

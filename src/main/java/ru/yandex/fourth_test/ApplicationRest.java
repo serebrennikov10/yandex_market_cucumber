@@ -13,35 +13,33 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 public class ApplicationRest {
-    Logger LOGGER;
-    private String responseBody;
+    private Logger LOGGER;
+    private static String responseBody;
 
     {
         LOGGER = Logger.getLogger(ApplicationRest.class.getName());
     }
 
-
     @Step("Отправляю запрос GET")
-    public String sendGetRequest(String region) throws IOException {
+    public void sendGetRequest(String region)  {
         RestAssured.baseURI = "http://restapi.demoqa.com/utilities/weather/city/";
         RequestSpecification httpRequest = RestAssured.given();
+        LOGGER.info("Send GET request to http://restapi.demoqa.com/utilities/weather/city/"+region);
         Response response = httpRequest.request(Method.GET, region);
         responseBody = response.getBody().asString();
-        return responseBody;
     }
 
     @Step("Проверяю, что респонc не пустой")
-    public void checkResponseBodyNotNull() throws IOException {
+    public void checkResponseBodyNotNull() {
         Assert.assertNotNull("Error! Response is null!", responseBody);
     }
 
     @Step("Вывожу response в Инфо лог")
-    public void outputResponseInfoLog() throws IOException {
-        LOGGER.info(responseBody);
+    public void outputResponseInfo() {
+        System.out.println(responseBody);
     }
 
-
-    @Step("Вывожу response из файла")
+    @Step("Экспортирую response в отдельный файл html")
     public void outputResponseInFile() throws IOException {
         try {
             FileOutputStream file = new FileOutputStream("./src/main/resources/FourthTest.html");

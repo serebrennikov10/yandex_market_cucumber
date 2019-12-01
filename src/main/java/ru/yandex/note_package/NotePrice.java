@@ -1,22 +1,22 @@
-package ru.yandex;
+package ru.yandex.note_package;
 
 public class NotePrice {
-    int price;
-    String name;
+    public int price;
+    public String name;
     public NotePrice(String name, int price){
         this.price = price;
         this.name = name;
     }
-    NotePrice(){}
-    void setPrice(int price){
+    public NotePrice(){}
+    public void setPrice(int price){
         this.price = price;
     }
-    int getPrice(){return  price;}
+    public int getPrice(){return  price;}
 
-    void setName(String name){
+    public void setName(String name){
         this.name = name;
     }
-    String getName(){return  name;}
+    public String getName(){return  name;}
 
     @Override
     public String toString(){
