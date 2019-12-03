@@ -14,8 +14,8 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import ru.yandex.note_package.Note;
-import ru.yandex.note_package.NotePrice;
+import ru.yandex.note_models.Note;
+import ru.yandex.note_models.NotePrice;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -139,6 +139,7 @@ public class MarketPage  {
             return instance;
         }
     }
+
 
     @Step("Меняю регион")
     public void selectNewRegionOnPage() throws IOException {

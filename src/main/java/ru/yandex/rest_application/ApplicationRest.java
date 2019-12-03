@@ -1,4 +1,4 @@
-package ru.yandex.fourth_test;
+package ru.yandex.rest_application;
 
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;

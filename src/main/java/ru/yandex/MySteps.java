@@ -10,8 +10,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
-import ru.yandex.fourth_test.ApplicationRest;
-import ru.yandex.note_package.Note;
+import ru.yandex.rest_application.ApplicationRest;
+import ru.yandex.note_models.Note;
 
 import java.io.FileInputStream;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package ru.yandex.note_package;
+package ru.yandex.note_models;
 
 public class Note {
     private String timeWork;
