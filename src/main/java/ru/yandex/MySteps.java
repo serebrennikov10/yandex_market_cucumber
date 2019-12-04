@@ -39,17 +39,21 @@ public class MySteps {
             FileInputStream file = new FileInputStream("src/main/resources/config.properties");
             property.load(file);
             String browser = property.getProperty("browser");
-            if ((browser.equalsIgnoreCase("firefox")) || (browser.equalsIgnoreCase("ff"))) {
-                System.setProperty("webdriver.gecko.driver", "./src/main/resources/drivers/geckodriver.exe");
-                driver = new FirefoxDriver();
-            } else if (browser.equalsIgnoreCase("chrome")) {
-                System.setProperty("webdriver.chrome.driver", "./src/main/resources/drivers/chromedriver.exe");
-                driver = new ChromeDriver();
-            } else if ((browser.equalsIgnoreCase("ie")) || (browser.equalsIgnoreCase("internetexplorer")) || (browser.equalsIgnoreCase("internet explorer"))) {
-                System.setProperty("webdriver.ie.driver", "./src/main/resources/drivers/IEDriverServer.exe");
-                driver = new InternetExplorerDriver();
-            } else {
-                LOGGER.warning("incorrect browser: " + browser);
+            switch (browser) {
+                case ("firefox"): {
+                    System.setProperty("webdriver.gecko.driver", "./src/main/resources/drivers/geckodriver.exe");
+                    driver = new FirefoxDriver();
+                } break;
+                case ("chrome"): {
+                    System.setProperty("webdriver.chrome.driver", "./src/main/resources/drivers/chromedriver.exe");
+                    driver = new ChromeDriver();
+                } break;
+                case ("ie"): {
+                    System.setProperty("webdriver.ie.driver", "./src/main/resources/drivers/IEDriverServer.exe");
+                    driver = new InternetExplorerDriver();
+                } break;
+                default : LOGGER.warning("incorrect browser: " + browser);
+                    break;
             }
             LOGGER.info("Browser: " + browser);
         }
